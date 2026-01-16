@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# macOS-ready abc2wav script
+
+# Check argument
+if [ $# -lt 1 ]; then
+    echo "Usage: abc2wav <file.abc>"
+    exit 1
+fi
+
+abcfile="$1"
+
+# Check if file exists
+if [ ! -f "$abcfile" ]; then
+    echo "ABC file not found: $abcfile"
+    exit 1
+fi
+
+# Remove .abc extension for output files
+suffix="${abcfile%.abc}"
+
+# Convert ABC → MIDI using abc2midi
+if ! command -v abc2midi &> /dev/null; then
+    echo "Error: abc2midi not found. Install via 'brew install abcmidi'"
+    exit 1
+fi
+
+abc2midi "$abcfile" -o "$suffix.mid"
+if [ $? -ne 0 ]; then
+    echo "abc2midi failed"
+    exit 1
+fi
+
+# Convert MIDI → WAV using timidity
+if ! command -v timidity &> /dev/null; then
+    echo "Error: timidity not found. Install via 'brew install timidity'"
+    exit 1
+fi
+
+timidity "$suffix.mid" -Ow -o "$suffix.wav"
+if [ $? -ne 0 ]; then
+    echo "timidity failed"
+    exit 1
+fi
+
+# Optional: delete intermediate files
+# rm "$suffix.mid" "$abcfile"
+
+echo "Created WAV: $suffix.wav"

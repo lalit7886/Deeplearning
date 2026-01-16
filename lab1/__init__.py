@@ -3,47 +3,55 @@ import regex as re
 import subprocess
 import urllib
 import numpy as np
-from IPython.display import Audios
+from IPython.display import Audio
+
 
 cwd=os.path.dirname(__file__)
 
 def load_training_data():
-    with open(os.path.join(cwd,"data","iris.abc"),"r") as f:
+    with open(os.path.join(cwd,"irish.abc"),"r") as f:
         text= f.read()
         songs=extract_songs_snippet(text)
     return songs
 
-def extract_song_snippet(text):
+def extract_songs_snippet(text):
     pattern="(^|\n\n)(.*?)\n\n"
-    search_results=re.findall(pattern=pattern,overlapped=True,flags=re.DOTALL)
-    songs=[songs[1] for song in search_results]
+    search_results=re.findall(pattern=pattern,string=text,overlapped=True,flags=re.DOTALL)
+    songs=[songs[1] for songs in search_results]
     print("Found {} songs in text".format(len(songs)))
+    return songs
     
 def save_song_to_abc(song,file_name="temp"):
     save_name="{}.abc".format(file_name)
+    save_name=os.path.join(cwd,save_name)
     with open(save_name,"w") as f:
         f.write(song)
+
     return file_name
 
 def abc2wav(abc_file):
     path_to_tool=os.path.join(cwd,"bin","abc2wav")
+    if not os.path.isfile(path_to_tool):
+        raise FileNotFoundError("the file is not found error occured")
     cmd="{}{}".format(path_to_tool,abc_file)
+    print(cmd)
     return os.system(cmd)
 
 def play_wave(wave_file):
-    return Audios(wave_file)
+    return Audio(wave_file)
 
 def play_song(song):
+    print("entered play song")
     basename=save_song_to_abc(song)
-    ret=abc2wav(basename + ".wav")
+    ret=abc2wav(basename + ".abc")
     if ret==0:
         return play_wave(basename+".wav")
     return None
 
 
 def play_generated_song(generated_text):
-    songs=extract_song_snippet(generated_text)
-    if len(song)==0:
+    songs=extract_songs_snippet(generated_text)
+    if len(songs)==0:
         print("No valid song is found in generated text")
     for song in songs:
         play_song(song)
