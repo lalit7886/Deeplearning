@@ -23,27 +23,27 @@ def extract_songs_snippet(text):
     
 def save_song_to_abc(song,file_name="temp"):
     save_name="{}.abc".format(file_name)
-    save_name=os.path.join(cwd,save_name)
-    with open(save_name,"w") as f:
+    save_path=os.path.join(cwd,save_name)
+    with open(save_path,"w") as f:
         f.write(song)
-
-    return file_name
+    print(f"file is saved to path {save_path}")
+    return save_path
 
 def abc2wav(abc_file):
     path_to_tool=os.path.join(cwd,"bin","abc2wav")
     if not os.path.isfile(path_to_tool):
         raise FileNotFoundError("the file is not found error occured")
-    cmd="{}{}".format(path_to_tool,abc_file)
-    print(cmd)
+    cmd="{} {}".format(path_to_tool,abc_file)
     return os.system(cmd)
 
 def play_wave(wave_file):
     return Audio(wave_file)
 
 def play_song(song):
-    print("entered play song")
     basename=save_song_to_abc(song)
-    ret=abc2wav(basename + ".abc")
+    
+    ret=abc2wav(basename)
+    print(f"ret: ----->{ret}")
     if ret==0:
         return play_wave(basename+".wav")
     return None
